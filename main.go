@@ -1,47 +1,57 @@
 package main
 
-import (
-    //"fmt"
-)
+func main() {}
 
-func main(){}
+func UsedSlots(s string, startPositions []int, endPositions []int) []int {
+	ret := make([]int, len(startPositions))
 
-func UsedSlots( s string, startPositions []int, endPositions []int) []int {
-    res := make([]int, len(startPositions) )
-    shelf := []byte(s)
-    for idx := range startPositions {
-        // validate sane input
-        if endPositions[idx]-startPositions[idx] < 2 {
-            continue // res[idx] == 0
-        }
-        section := shelf[startPositions[idx]-1:endPositions[idx]]
-        // Find the last closing slot
-        var closedSectionEnd int
-        sectionLength := len(section)-1
-        for i := sectionLength; i >= 0; i-- {
-            if section[i] == '*' {
-                continue
-            } else {
-                closedSectionEnd = i
-                break
-            }
-        }
-        // count remaining slots from the beginning
-        shelfOpen := false
-        for slotIndex, p := range section {
-            if slotIndex > closedSectionEnd {
-                break
-            }
-            if !shelfOpen && p == '*' {
-                continue
-            } else {
-                shelfOpen = true
-            }
-            if p == '*' {
-               res[idx]++
-            }
-        }
-    }
-    return res
+	slotCh := parser(s)
+	for slot := range slotCh {
+		for i := 0; i < len(startPositions); i++ {
+			if startPositions[i] >= slot.end || startPositions[i] > slot.start {
+				continue
+			}
+			if endPositions[i] < slot.end {
+				continue
+			}
+
+			ret[i] += slot.items
+		}
+	}
+
+	return ret
 }
 
+type slotInfo struct {
+	start int // index of starting '|' for this slot (1-based)
+	end   int // index of ending '|' for this slot
+	items int // number of '*'s in this slot
+}
+
+// Parse input string into slots and send each slot over the returned channel
+// Only returns slots that have a beginning and ending '|'
+func parser(s string) <-chan slotInfo {
+	ch := make(chan slotInfo)
+
+	go func() {
+		var prev, nr int
+
+		for i := 0; i < len(s); i++ {
+			switch s[i] {
+			case '|':
+				if prev > 0 { // we have a complete slot
+					ch <- slotInfo{start: prev, end: i + 1, items: nr}
+				}
+				nr = 0
+				prev = i + 1
+
+			case '*':
+				nr++
+			}
+		}
+
+		close(ch)
+	}()
+
+	return ch
+}
