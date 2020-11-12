@@ -5,8 +5,7 @@ func main() {}
 func UsedSlots(s string, startPositions []int, endPositions []int) []int {
 	ret := make([]int, len(startPositions))
 
-	slotCh := parser(s)
-	for slot := range slotCh {
+	for slot := range parser(s) {
 		for i := 0; i < len(startPositions); i++ {
 			if startPositions[i] >= slot.end || startPositions[i] > slot.start {
 				continue
