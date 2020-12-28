@@ -67,11 +67,10 @@ constexpr auto test_input_1(){
 
 int main(int argc, const char * argv[]) {
     
-
     auto input = test_input_1();
     auto mapResult = invoke_solution<MapSolution::Solution>( input );
     auto treeResult = invoke_solution<TreeSolution::Solution>( input );
-    
+    auto vectorResult = invoke_solution<VectorSolution::Solution>( input );
 
     return 0;
 }
